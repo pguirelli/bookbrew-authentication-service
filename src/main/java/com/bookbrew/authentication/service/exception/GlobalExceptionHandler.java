@@ -36,12 +36,20 @@ public class GlobalExceptionHandler {
                         MethodArgumentNotValidException ex, WebRequest request) {
                 StringBuilder errorMessage = new StringBuilder("Validation failed for fields: ");
 
-                for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-                        errorMessage.append("['")
+                if (ex.getBindingResult().getFieldErrors().size() > 1) {
+                        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+                                errorMessage.append("['")
+                                                .append(error.getField())
+                                                .append("' - ")
+                                                .append(error.getDefaultMessage())
+                                                .append("] ");
+                        }
+                } else {
+                        FieldError error = ex.getBindingResult().getFieldErrors().get(0);
+                        errorMessage.append("'")
                                         .append(error.getField())
                                         .append("' - ")
-                                        .append(error.getDefaultMessage())
-                                        .append("] ");
+                                        .append(error.getDefaultMessage());
                 }
 
                 ErrorResponse errorResponse = new ErrorResponse(
