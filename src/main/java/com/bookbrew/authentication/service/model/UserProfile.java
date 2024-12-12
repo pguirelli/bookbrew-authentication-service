@@ -18,7 +18,7 @@ public class UserProfile {
     private Long id;
 
     @NotBlank(message = "Name is required")
-    @Size(min = 2, max = 100, message = "Name must be between 2 and 30 characters")
+    @Size(min = 2, max = 30, message = "Name must be between 2 and 30 characters")
     private String name;
 
     @NotNull(message = "Status is required")
