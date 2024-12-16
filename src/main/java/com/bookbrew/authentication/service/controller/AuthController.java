@@ -16,6 +16,7 @@ import com.bookbrew.authentication.service.dto.EmailRecoveryRequestDTO;
 import com.bookbrew.authentication.service.dto.ForgotPasswordRequestDTO;
 import com.bookbrew.authentication.service.dto.LoginRequestDTO;
 import com.bookbrew.authentication.service.dto.PasswordChangeRequestDTO;
+import com.bookbrew.authentication.service.dto.ResetPasswordRequestDTO;
 import com.bookbrew.authentication.service.model.User;
 import com.bookbrew.authentication.service.service.AuthService;
 
@@ -43,9 +44,17 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<User> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
-        User user = authService.forgotPassword(request);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
+        String token = authService.forgotPassword(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/recover-email")
