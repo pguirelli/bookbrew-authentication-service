@@ -11,9 +11,12 @@ import com.bookbrew.authentication.service.dto.EmailRecoveryRequestDTO;
 import com.bookbrew.authentication.service.dto.ForgotPasswordRequestDTO;
 import com.bookbrew.authentication.service.dto.LoginRequestDTO;
 import com.bookbrew.authentication.service.dto.PasswordChangeRequestDTO;
+import com.bookbrew.authentication.service.dto.ResetPasswordRequestDTO;
 import com.bookbrew.authentication.service.exception.BadRequestException;
 import com.bookbrew.authentication.service.exception.ResourceNotFoundException;
+import com.bookbrew.authentication.service.model.RecoveryToken;
 import com.bookbrew.authentication.service.model.User;
+import com.bookbrew.authentication.service.repository.RecoveryTokenRepository;
 import com.bookbrew.authentication.service.repository.UserRepository;
 
 @Service
@@ -21,6 +24,9 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RecoveryTokenRepository tokenRepository;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -55,7 +61,7 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    public User forgotPassword(ForgotPasswordRequestDTO request) {
+    public String forgotPassword(ForgotPasswordRequestDTO request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("Invalid email or CPF"));
 
@@ -63,17 +69,41 @@ public class AuthService {
             throw new BadRequestException("Invalid email or CPF");
         }
 
-        // Generate a new random password
-        String newPassword = UUID.randomUUID().toString().substring(0, 8);
+        // Generate recovery token
+        String token = UUID.randomUUID().toString();
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        RecoveryToken recoveryToken = new RecoveryToken();
+        recoveryToken.setUser(user);
+        recoveryToken.setToken(token);
+        recoveryToken.setCreatedAt(LocalDateTime.now());
+        recoveryToken.setExpiresAt(LocalDateTime.now().plusHours(2));
+        recoveryToken.setUsed(false);
+
+        tokenRepository.save(recoveryToken);
+
+        return token;
+    }
+
+    public User resetPassword(ResetPasswordRequestDTO request) {
+        RecoveryToken token = tokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new BadRequestException("Invalid token"));
+
+        if (token.isUsed()) {
+            throw new BadRequestException("Token has already been used");
+        }
+
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Token has expired");
+        }
+
+        User user = token.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setPasswordUpdateDate(LocalDateTime.now());
 
-        User savedUser = userRepository.save(user);
-        savedUser.setPassword(newPassword); 
-        // Here you would typically send an email with the new password
-        // For now, we'll just return the user with the new password
-        return savedUser;
+        token.setUsed(true);
+        tokenRepository.save(token);
+
+        return userRepository.save(user);
     }
 
     public String recoverEmail(EmailRecoveryRequestDTO request) {
