@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bookbrew.authentication.service.dto.EmailRecoveryRequestDTO;
@@ -21,11 +22,14 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     public User login(LoginRequestDTO loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid email or password");
         }
 
@@ -41,11 +45,11 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (!user.getPassword().equals(request.getCurrentPassword())) {
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new BadRequestException("Current password is incorrect");
         }
 
-        user.setPassword(request.getNewPassword());
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setPasswordUpdateDate(LocalDateTime.now());
 
         return userRepository.save(user);
@@ -62,11 +66,11 @@ public class AuthService {
         // Generate a new random password
         String newPassword = UUID.randomUUID().toString().substring(0, 8);
 
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
         user.setPasswordUpdateDate(LocalDateTime.now());
 
         User savedUser = userRepository.save(user);
-
+        savedUser.setPassword(newPassword); 
         // Here you would typically send an email with the new password
         // For now, we'll just return the user with the new password
         return savedUser;
@@ -74,7 +78,7 @@ public class AuthService {
 
     public String recoverEmail(EmailRecoveryRequestDTO request) {
         User user;
-        
+
         if (request.getCpf() != null && !request.getCpf().trim().isEmpty()) {
             user = userRepository.findByCpf(request.getCpf())
                     .orElseThrow(() -> new BadRequestException("CPF not found"));
