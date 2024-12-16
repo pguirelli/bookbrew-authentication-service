@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bookbrew.authentication.service.exception.BadRequestException;
@@ -22,6 +23,9 @@ public class UserService {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -34,6 +38,7 @@ public class UserService {
     public User createUser(User user) {
         validateUserProfile(user.getProfile());
         validateUser(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationDate(LocalDateTime.now());
         user.setUpdateDate(LocalDateTime.now());
         return userRepository.save(user);
@@ -45,6 +50,10 @@ public class UserService {
 
         validateUserProfile(userDetails.getProfile());
         validateUser(userDetails);
+
+        if (userDetails.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        }
 
         user.setName(userDetails.getName());
         user.setLastName(userDetails.getLastName());
@@ -69,6 +78,9 @@ public class UserService {
         }
         if (userRepository.findByPhone(user.getPhone()).isPresent()) {
             throw new BadRequestException("Phone '" + user.getPhone() + "' is already in use.");
+        }
+        if (user.getPassword().length() < 6 || user.getPassword().length() > 20) {
+            throw new BadRequestException("Password must be between 6 and 20 characters");
         }
     }
 
