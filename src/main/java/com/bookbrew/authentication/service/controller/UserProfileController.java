@@ -35,21 +35,18 @@ public class UserProfileController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserProfile> getUserProfileById(@PathVariable Long id) {
-        UserProfile userProfile = userProfileService.getUserProfileById(id);
-        return ResponseEntity.ok(userProfile);
+        return ResponseEntity.ok(userProfileService.getUserProfileById(id));
     }
 
     @PostMapping
     public ResponseEntity<UserProfile> createUserProfile(@Valid @RequestBody UserProfile userProfile) {
-        UserProfile createdUserProfile = userProfileService.createUserProfile(userProfile);
-        return new ResponseEntity<>(createdUserProfile, HttpStatus.CREATED);
+        return new ResponseEntity<>(userProfileService.createUserProfile(userProfile), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserProfile> updateUserProfile(@PathVariable Long id,
             @Valid @RequestBody UserProfile userProfileDetails) {
-        UserProfile updatedUserProfile = userProfileService.updateUserProfile(id, userProfileDetails);
-        return ResponseEntity.ok(updatedUserProfile);
+        return ResponseEntity.ok(userProfileService.updateUserProfile(id, userProfileDetails));
     }
 
     @DeleteMapping("/{id}")

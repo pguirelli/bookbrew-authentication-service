@@ -12,7 +12,6 @@ public class ForgotPasswordRequestDTO {
     @NotBlank(message = "CPF is required")
     private String cpf;
 
-    // Getters and Setters
     public String getEmail() {
         return email;
     }

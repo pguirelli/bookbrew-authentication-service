@@ -23,9 +23,11 @@ public class UserProfileService {
 
     public List<UserProfile> getAllUserProfiles() {
         List<UserProfile> profiles = userProfileRepository.findAll();
+
         if (profiles.isEmpty()) {
             throw new ResourceNotFoundException("No user profiles found");
         }
+
         return profiles;
     }
 

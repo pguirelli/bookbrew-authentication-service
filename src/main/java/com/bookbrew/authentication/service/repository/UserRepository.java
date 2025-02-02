@@ -8,6 +8,7 @@ import com.bookbrew.authentication.service.model.User;
 import com.bookbrew.authentication.service.model.UserProfile;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+
     Optional<User> findByEmail(String email);
 
     Optional<User> findByCpf(String cpf);
@@ -15,4 +16,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByPhone(String phone);
 
     boolean existsByProfile(UserProfile profile);
+
 }

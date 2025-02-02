@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.bookbrew.authentication.service.dto.UserDTO;
 import com.bookbrew.authentication.service.exception.BadRequestException;
 import com.bookbrew.authentication.service.exception.ResourceNotFoundException;
 import com.bookbrew.authentication.service.model.User;
@@ -26,25 +27,36 @@ public class UserService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        if (userRepository.findAll().isEmpty()) {
+            throw new ResourceNotFoundException("No users found");
+        }
+
+        return userRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        return convertToDTO(user);
     }
 
-    public User createUser(User user) {
+    public UserDTO createUser(User user) {
         validateUserProfile(user.getProfile());
         validateUser(user);
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreationDate(LocalDateTime.now());
-        user.setUpdateDate(LocalDateTime.now());
-        return userRepository.save(user);
+
+        userRepository.save(user);
+
+        return convertToDTO(user);
     }
 
-    public User updateUser(Long id, User userDetails) {
+    public UserDTO updateUser(Long id, User userDetails) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
@@ -61,7 +73,10 @@ public class UserService {
         user.setPhone(userDetails.getPhone());
         user.setUpdateDate(LocalDateTime.now());
         user.setStatus(userDetails.getStatus());
-        return userRepository.save(user);
+
+        userRepository.save(user);
+
+        return convertToDTO(user);
     }
 
     public void deleteUser(Long id) {
@@ -106,11 +121,29 @@ public class UserService {
             throw new BadRequestException("User profile is required");
         }
 
-        UserProfile existingProfile = userProfileRepository.findById(profile.getId())
-                .orElseThrow(() -> new BadRequestException("Profile not found with id: " + profile.getId()));
-
-        if (!existingProfile.getStatus()) {
+        if (!userProfileRepository.findById(profile.getId())
+                .orElseThrow(() -> new BadRequestException("Profile not found with id: " + profile.getId()))
+                .getStatus()) {
             throw new BadRequestException("Cannot associate user with inactive profile (ID: " + profile.getId() + ")");
         }
+    }
+
+    private UserDTO convertToDTO(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        dto.setCpf(user.getCpf());
+        dto.setPhone(user.getPhone());
+        dto.setPassword(user.getPassword());
+        dto.setStatus(user.getStatus());
+        dto.setIdProfile(user.getProfile().getId());
+        dto.setCreationDate(user.getCreationDate());
+        dto.setUpdateDate(user.getUpdateDate());
+        dto.setLastLoginDate(user.getLastLoginDate());
+        dto.setPasswordUpdateDate(user.getPasswordUpdateDate());
+
+        return dto;
     }
 }

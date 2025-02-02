@@ -1,7 +1,9 @@
 package com.bookbrew.authentication.service.dto;
 
 public class ResetPasswordRequestDTO {
+
     private String token;
+
     private String newPassword;
 
     public String getToken() {
