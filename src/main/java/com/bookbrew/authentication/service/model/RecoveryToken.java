@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "recovery_tokens")
 public class RecoveryToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -33,23 +33,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<User> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        User user = authService.login(loginRequest);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(authService.login(loginRequest));
     }
 
     @PutMapping("/users/{userId}/password")
     public ResponseEntity<User> changePassword(
             @PathVariable Long userId,
             @Valid @RequestBody PasswordChangeRequestDTO request) {
-        User user = authService.changePassword(userId, request);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(authService.changePassword(userId, request));
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
-        String token = authService.forgotPassword(request);
         Map<String, String> response = new HashMap<>();
-        response.put("token", token);
+        response.put("token", authService.forgotPassword(request));
         return ResponseEntity.ok(response);
     }
 
@@ -61,9 +58,8 @@ public class AuthController {
 
     @PostMapping("/recover-email")
     public ResponseEntity<Map<String, String>> recoverEmail(@Valid @RequestBody EmailRecoveryRequestDTO request) {
-        String email = authService.recoverEmail(request);
         Map<String, String> response = new HashMap<>();
-        response.put("email", email);
+        response.put("email", authService.recoverEmail(request));
         return ResponseEntity.ok(response);
     }
 }

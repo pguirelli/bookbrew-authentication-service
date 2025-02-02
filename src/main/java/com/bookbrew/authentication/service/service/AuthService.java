@@ -38,12 +38,12 @@ public class AuthService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid email or password");
         }
-
         if (!user.getProfile().getStatus()) {
             throw new BadRequestException("User profile is inactive");
         }
 
         user.setLastLoginDate(LocalDateTime.now());
+
         return userRepository.save(user);
     }
 
@@ -69,7 +69,6 @@ public class AuthService {
             throw new BadRequestException("Invalid email or CPF");
         }
 
-        // Generate recovery token
         String token = UUID.randomUUID().toString();
 
         RecoveryToken recoveryToken = new RecoveryToken();
@@ -91,7 +90,6 @@ public class AuthService {
         if (token.isUsed()) {
             throw new BadRequestException("Token has already been used");
         }
-
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Token has expired");
         }
@@ -101,6 +99,7 @@ public class AuthService {
         user.setPasswordUpdateDate(LocalDateTime.now());
 
         token.setUsed(true);
+
         tokenRepository.save(token);
 
         return userRepository.save(user);

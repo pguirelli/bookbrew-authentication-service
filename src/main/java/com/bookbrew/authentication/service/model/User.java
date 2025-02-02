@@ -1,15 +1,19 @@
 package com.bookbrew.authentication.service.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.bookbrew.authentication.service.custom.annotations.Cpf;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -60,6 +64,10 @@ public class User {
     private LocalDateTime lastLoginDate;
 
     private LocalDateTime passwordUpdateDate;
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecoveryToken> recoveryTokens;
 
     public Long getId() {
         return id;
@@ -163,5 +171,13 @@ public class User {
 
     public void setProfile(UserProfile profile) {
         this.profile = profile;
+    }
+
+    public List<RecoveryToken> getRecoveryTokens() {
+        return recoveryTokens;
+    }
+
+    public void setRecoveryTokens(List<RecoveryToken> recoveryTokens) {
+        this.recoveryTokens = recoveryTokens;
     }
 }
