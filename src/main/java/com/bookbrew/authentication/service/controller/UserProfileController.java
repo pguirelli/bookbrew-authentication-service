@@ -45,7 +45,7 @@ public class UserProfileController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserProfile> updateUserProfile(@PathVariable Long id,
-            @Valid @RequestBody UserProfile userProfileDetails) {
+            @RequestBody UserProfile userProfileDetails) {
         return ResponseEntity.ok(userProfileService.updateUserProfile(id, userProfileDetails));
     }
 

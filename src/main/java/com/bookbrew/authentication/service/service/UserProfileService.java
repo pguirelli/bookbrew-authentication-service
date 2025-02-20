@@ -45,10 +45,11 @@ public class UserProfileService {
         UserProfile userProfile = userProfileRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User profile not found with id: " + id));
 
-        validateUserProfile(userProfileDetails);
-
-        userProfile.setName(userProfileDetails.getName());
-        userProfile.setStatus(userProfileDetails.getStatus());
+        if (userProfileDetails.getName() != null)
+            //validateUserProfile(userProfileDetails);
+            userProfile.setName(userProfileDetails.getName());
+        if (userProfileDetails.getStatus() != null)
+            userProfile.setStatus(userProfileDetails.getStatus());
 
         return userProfileRepository.save(userProfile);
     }
@@ -66,9 +67,6 @@ public class UserProfileService {
     }
 
     private void validateUserProfile(UserProfile userProfile) {
-        if (userProfile.getName() == null || userProfile.getName().trim().isEmpty()) {
-            throw new BadRequestException("User profile name cannot be empty");
-        }
         if (userProfileRepository.findByName(userProfile.getName()).isPresent()) {
             throw new DuplicateNameException("Name '" + userProfile.getName() + "' is already in use");
         }
