@@ -22,7 +22,7 @@ public class UserProfile {
     private String name;
 
     @NotNull(message = "Status is required")
-    private boolean status;
+    private Boolean status;
 
     public Long getId() {
         return id;
@@ -40,11 +40,11 @@ public class UserProfile {
         this.name = name;
     }
 
-    public boolean getStatus() {
+    public Boolean getStatus() {
         return status;
     }
 
-    public void setStatus(boolean status) {
+    public void setStatus(Boolean status) {
         this.status = status;
     }
 }

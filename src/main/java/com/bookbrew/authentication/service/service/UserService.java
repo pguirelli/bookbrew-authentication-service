@@ -61,16 +61,21 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         validateUserProfile(userDetails.getProfile());
-        validateUserUpdate(user, userDetails);
+        // validateUserUpdate(user, userDetails);
 
         if (userDetails.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         }
 
-        user.setName(userDetails.getName());
-        user.setLastName(userDetails.getLastName());
-        user.setEmail(userDetails.getEmail());
-        user.setPhone(userDetails.getPhone());
+        if (userDetails.getName() != null)
+            user.setName(userDetails.getName());
+        if (userDetails.getLastName() != null)
+            user.setLastName(userDetails.getLastName());
+        if (userDetails.getEmail() != null)
+            user.setEmail(userDetails.getEmail());
+        if (userDetails.getPhone() != null)
+            user.setPhone(userDetails.getPhone());
+
         user.setUpdateDate(LocalDateTime.now());
         user.setStatus(userDetails.getStatus());
 
@@ -98,23 +103,29 @@ public class UserService {
         }
     }
 
-    private void validateUserUpdate(User user, User modifiedUser) {
-        if (!user.getEmail().equals(modifiedUser.getEmail())) {
-            if (userRepository.findByEmail(modifiedUser.getEmail()).isPresent()) {
-                throw new BadRequestException("Email '" + modifiedUser.getEmail() + "' is already in use.");
-            }
-        }
-        if (!user.getPhone().equals(modifiedUser.getPhone())) {
-            if (userRepository.findByPhone(modifiedUser.getPhone()).isPresent()) {
-                throw new BadRequestException("Phone '" + modifiedUser.getPhone() + "' is already in use.");
-            }
-        }
-        if (!user.getPhone().equals(modifiedUser.getPhone())) {
-            if (modifiedUser.getPassword().length() < 6 || modifiedUser.getPassword().length() > 20) {
-                throw new BadRequestException("Password must be between 6 and 20 characters");
-            }
-        }
-    }
+    /*
+     * private void validateUserUpdate(User user, User modifiedUser) {
+     * if (!user.getEmail().equals(modifiedUser.getEmail())) {
+     * if (userRepository.findByEmail(modifiedUser.getEmail()).isPresent()) {
+     * throw new BadRequestException("Email '" + modifiedUser.getEmail() +
+     * "' is already in use.");
+     * }
+     * }
+     * if (!user.getPhone().equals(modifiedUser.getPhone())) {
+     * if (userRepository.findByPhone(modifiedUser.getPhone()).isPresent()) {
+     * throw new BadRequestException("Phone '" + modifiedUser.getPhone() +
+     * "' is already in use.");
+     * }
+     * }
+     * if (!user.getPhone().equals(modifiedUser.getPhone())) {
+     * if (modifiedUser.getPassword().length() < 6 ||
+     * modifiedUser.getPassword().length() > 20) {
+     * throw new
+     * BadRequestException("Password must be between 6 and 20 characters");
+     * }
+     * }
+     * }
+     */
 
     private void validateUserProfile(UserProfile profile) {
         if (profile == null || profile.getId() == null) {
